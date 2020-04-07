@@ -25,32 +25,45 @@ void setup()
     for(;;); // Don't proceed, loop forever
   }
 
-
+  encoder.Timer_init();
 }
 
 void loop() 
 {
-  // put your main code here, to run repeatedly:
+  if (encoder.rotate_flag == 1)
+  {
+    if (encoder.direct == 0)
+    { 
+      Serial.println("backward rotated!");
+    }
+     else
+    {
+      Serial.println("forward rotated!");
+    }
+    encoder.rotate_flag = 0;
+  }
 }
 
-void barGraph(unsigned v) 
+/*
+void barGraph(unsigned v)
 {
   char buf[20];
   unsigned width, w;
 
-  snprintf(buf,sizeof buf,"ADC %u",v);
-  width = disp_width-2;
+  snprintf(buf, sizeof buf, "ADC %u", v);
+  width = disp_width - 2;
   w = v * width / 4095;
   display.print(buf);
-  display.fillRect(1,8,w,disp_height-2);
+  display.fillRect(1, 8, w, disp_height - 2);
   display.setColor(BLACK);
-  display.fillRect(w,38,disp_width-2,disp_height-2);
-  display.fillRect(1,1,disp_width-2,37);
+  display.fillRect(w, 38, disp_width - 2, disp_height - 2);
+  display.fillRect(1, 1, disp_width - 2, 37);
   display.setColor(WHITE);
-  display.drawLine(0,38,disp_width-2,38);
-  display.drawRect(0,0,disp_width-1,disp_height-1);
+  display.drawLine(0, 38, disp_width - 2, 38);
+  display.drawRect(0, 0, disp_width - 1, disp_height - 1);
   display.setTextAlignment(TEXT_ALIGN_LEFT);
   display.setFont(ArialMT_Plain_8);
-  display.drawString(0,0,buf);
+  display.drawString(0, 0, buf);
   display.display();
 }
+*/
