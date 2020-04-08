@@ -30,16 +30,24 @@ void setup()
 
 void loop() 
 {
+  static uint16_t consigne = 0;
+
   if (encoder.rotate_flag == 1)
   {
     if (encoder.direct == 0)
-    { 
-      Serial.println("backward rotated!");
+    {
+      if(consigne < 255)
+        consigne++;
     }
      else
     {
-      Serial.println("forward rotated!");
+      if(consigne != 0)
+        consigne--;
     }
+    char txt[15];
+    snprintf(txt, 15, "csgn : %3d", consigne);
+    Serial.println(txt);
+
     encoder.rotate_flag = 0;
   }
 }
