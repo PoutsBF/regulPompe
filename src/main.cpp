@@ -3,7 +3,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <encoder.h>
+#include "encoder.h"
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -13,6 +13,13 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 void barGraph(unsigned v);
+
+const uint8_t pwmA   = 3;
+const uint8_t pwmB   = 11;
+const uint8_t brakeA = 9;
+const uint8_t brakeB = 8;
+const uint8_t dirA   = 12;
+const uint8_t dirB   = 13;
 
 void setup() 
 {
@@ -26,6 +33,14 @@ void setup()
   }
 
   encoder.Timer_init();
+
+  pinMode(pwmA, OUTPUT);      pinMode(pwmB, OUTPUT);
+  pinMode(brakeA, OUTPUT);    pinMode(brakeB, OUTPUT);
+  pinMode(dirA, OUTPUT);      pinMode(dirB, OUTPUT);
+
+  digitalWrite(pwmA, HIGH);   digitalWrite(pwmB, HIGH);
+  digitalWrite(brakeA, LOW);  digitalWrite(brakeB, LOW);
+  digitalWrite(dirA, LOW);    digitalWrite(dirB, LOW);
 }
 
 void loop() 

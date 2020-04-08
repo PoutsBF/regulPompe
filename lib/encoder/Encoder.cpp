@@ -1,23 +1,8 @@
 /*
- 2012 Copyright (c) Seeed Technology Inc.
-
- Author: LG
-  
- This library is free software; you can redistribute it and/or
- modify it under the terms of the GNU Lesser General Public
- License as published by the Free Software Foundation; either
- version 2.1 of the License, or (at your option) any later version.
-
- This library is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Lesser General Public License for more details.
-
- You should have received a copy of the GNU Lesser General Public
- License along with this library; if not, write to the Free Software
- Foundation, Inc.,51 Franklin St,Fifth Floor, Boston, MA 02110-1301 USA
-
+Inspiré de la bibliothèque Seeed Studio (LG)
+2020 Stéphane Lepoutère
 */
+
 #include "Encoder.h"
 #include <Arduino.h>
 #include <TimerOne.h>
@@ -31,6 +16,9 @@ char ready_msg = 0;
 void timerIsr();
 void isr_encod();
 
+static uint8_t encod_A;
+static uint8_t encod_B;
+
 Encoder::Encoder()
 {
   encod_A = 6;
@@ -40,8 +28,10 @@ Encoder::Encoder()
   attachPinChangeInterrupt(encod_B, isr_encod, CHANGE);
 }
 
-Encoder::Encoder(uint8_t port_encodA, uint8_t port_encodB) : encod_A(port_encodA), encod_B(port_encodB)
+Encoder::Encoder(uint8_t port_encodA, uint8_t port_encodB)
 {
+  encod_A = port_encodA;
+  encod_B = port_encodB;
   attachPinChangeInterrupt(encod_A, isr_encod, CHANGE);
   attachPinChangeInterrupt(encod_B, isr_encod, CHANGE);
 }
@@ -53,7 +43,7 @@ void Encoder::Timer_init(void)
     sei();
 }
 
-void isr_encod()
+void Encoder::isr_encod(void)
 {
 //  static int val_p_encod_A = 0;
   static int val_p_encod_B = 0;
