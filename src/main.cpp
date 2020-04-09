@@ -31,6 +31,7 @@ void setup()
     Serial.println(F("SSD1306 allocation failed"));
     for(;;); // Don't proceed, loop forever
   }
+  display.clearDisplay();
 
   encoder.Timer_init();
 
@@ -41,6 +42,10 @@ void setup()
   digitalWrite(pwmA, HIGH);   digitalWrite(pwmB, HIGH);
   digitalWrite(brakeA, LOW);  digitalWrite(brakeB, LOW);
   digitalWrite(dirA, LOW);    digitalWrite(dirB, LOW);
+
+  analogWrite(pwmA, 0);
+  analogWrite(pwmB, 0);
+
 }
 
 void loop() 
@@ -62,6 +67,13 @@ void loop()
     char txt[15];
     snprintf(txt, 15, "csgn : %3d", consigne);
     Serial.println(txt);
+
+    display.setCursor(0, 0);
+    display.print("csgn : ");
+    display.print(consigne);
+
+    analogWrite(pwmA, consigne);
+    analogWrite(pwmB, consigne);
 
     encoder.rotate_flag = 0;
   }

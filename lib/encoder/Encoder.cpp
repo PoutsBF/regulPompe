@@ -38,7 +38,7 @@ Encoder::Encoder(uint8_t port_encodA, uint8_t port_encodB)
 
 void Encoder::Timer_init(void)
 {
-    Timer1.initialize(150000); // set a timer of length 100 microseconds
+    Timer1.initialize(5000); // set a timer of length 100 microseconds
     Timer1.attachInterrupt(timerIsr); // attach the service routine here
     sei();
 }
