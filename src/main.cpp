@@ -23,7 +23,7 @@ void bargraph (uint8_t numero, uint8_t valeur);
 void TRACE(const char * texte, uint16_t valeur);
 void TRACE(const char * texte, uint16_t valeur1, uint16_t valeur2);
 void debitmetre( void );
-static uint8_t dbm_ticks = 0;
+static uint16_t dbm_ticks = 0;
 
 const uint8_t pwmA   = 3;
 const uint8_t pwmB   = 11;
@@ -32,7 +32,7 @@ const uint8_t brakeB = 8;
 const uint8_t dirA   = 12;
 const uint8_t dirB   = 13;
 
-const uint8_t flowW  = 2;
+const uint8_t flowW  = 5;
 
 #define CSGN_VAL_MIN  128
 
@@ -66,7 +66,6 @@ void setup()
   analogWrite(pwmB, 0);
 
   pinMode(flowW, INPUT);
-  // attachPinChangeInterrupt(4, debitmetre, CHANGE);
   attachInterrupt(flowW, debitmetre, CHANGE);
 
   if (sensor.init()) 
@@ -85,23 +84,45 @@ void loop()
   static int dbm_p_entree = 0;
   static unsigned long dbm_tmps = 0;
   static unsigned long qs_tmps = 0;
+  static unsigned long courantM_tmr = 0;
+
+  if(millis() > courantM_tmr)
+  {
+    static uint16_t courantM_p_val = 0;
+    static uint16_t courantM_p_moy = 0;
+
+    courantM_tmr += 100;
+    uint16_t courantM_val = analogRead(A1);
+    courantM_val = (courantM_val + courantM_val + courantM_val) >> 1;
+    uint16_t courantM_moy = (courantM_p_val + courantM_val) >> 1;
+    courantM_p_val = courantM_val;
+
+    if(courantM_p_moy != courantM_moy)
+    {
+      courantM_p_moy = courantM_moy;
+      bargraph(1, courantM_p_moy);
+      TRACE("courant : %d", courantM_p_val);
+    }
+  }
 
   if(millis() > qs_tmps)
   {
-    int quality = sensor.slope();
+    static int quality_p = -1;
     qs_tmps += 10000;
 
-//    Serial.print("Sensor value: ");
-//    Serial.println(sensor.getValue());
+    int quality = sensor.slope();
 
-    if (quality == AirQualitySensor::FORCE_SIGNAL) {
-        Serial.println("High pollution! Force signal active.");
-    } else if (quality == AirQualitySensor::HIGH_POLLUTION) {
-        Serial.println("High pollution!");
-    } else if (quality == AirQualitySensor::LOW_POLLUTION) {
-        Serial.println("Low pollution!");
-    } else if (quality == AirQualitySensor::FRESH_AIR) {
-        Serial.println("Fresh air.");
+    if(quality != quality_p)
+    {
+      quality_p = quality;
+      if (quality == AirQualitySensor::FORCE_SIGNAL) 
+          Serial.println("High pollution!!! Force signal active.");
+      else if (quality == AirQualitySensor::HIGH_POLLUTION)
+          Serial.println("High pollution!!");
+      else if (quality == AirQualitySensor::LOW_POLLUTION) 
+          Serial.println("Low pollution!");
+      else if (quality == AirQualitySensor::FRESH_AIR)
+          Serial.println("Fresh air.");
     }
     bargraph(3, (sensor.getValue()) >> 1);
   }
@@ -109,13 +130,33 @@ void loop()
   int dbm_entree = digitalRead(flowW);
   if(dbm_entree != dbm_p_entree)
   {
-    unsigned long dbm_delta = millis() - dbm_tmps;
+    dbm_ticks++;
     dbm_p_entree = dbm_entree;
-    dbm_tmps = millis();
-  
-    TRACE("Temps : %d", dbm_delta);
   }
 
+  if(millis() > dbm_tmps)
+  {
+    uint8_t dbm_debit;
+    static uint8_t dbm_p_debit;
+
+    dbm_tmps += 1000;
+
+    if(dbm_ticks)
+    {
+      dbm_debit = dbm_ticks << 2;
+      dbm_ticks = 0;
+    }
+    else
+    {
+      dbm_debit = 0;
+    }
+    
+    if(dbm_p_debit != dbm_debit)
+    {
+      bargraph(2, dbm_debit);
+      dbm_p_debit = dbm_debit;
+    }
+  }
 
   if (encoder.rotate_flag == 1)
   {
@@ -129,8 +170,6 @@ void loop()
       if(consigne != 0)
         consigne -= 5;
     }
-
-    TRACE("\ncsgn : %3d", consigne);
 
     if(consigne > CSGN_VAL_MIN)
     {
@@ -175,6 +214,10 @@ void testdrawchar(void)
 
   display.setCursor(0, 16);     // Start at top-left corner
   display.write(("d‚bit :"));
+
+  display.setCursor(0, 24);     // Start at top-left corner
+  display.write(("qlt‚ air :"));
+
 //  display.write(("d\x82bit :"));
 
   display.drawRect(64, 0, 64, 7, SSD1306_WHITE);
